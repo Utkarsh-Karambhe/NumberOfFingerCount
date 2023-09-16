@@ -1,0 +1,60 @@
+import cv2
+import mediapipe as mp
+
+# Initialize MediaPipe hands module
+mp_hands = mp.solutions.hands
+hands = mp_hands.Hands()
+
+# Capture video from your webcam
+cap = cv2.VideoCapture(0)
+
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break
+
+    # Convert the frame to RGB
+    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+    # Process the frame with MediaPipe hands
+    results = hands.process(frame_rgb)
+
+    finger_count = 0
+
+    if results.multi_hand_landmarks:
+        for landmarks in results.multi_hand_landmarks:
+            # Assuming a standard hand pose, you can use landmarks to detect fingers.
+            # For example, if the index, middle, ring, and pinky fingers are extended,
+            # and the thumb is folded, consider it as four fingers raised.
+            
+            # Thumb
+            if landmarks.landmark[4].y < landmarks.landmark[3].y:
+                finger_count += 1
+
+            # Index finger
+            if landmarks.landmark[8].y < landmarks.landmark[6].y:
+                finger_count += 1
+
+            # Middle finger
+            if landmarks.landmark[12].y < landmarks.landmark[10].y:
+                finger_count += 1
+
+            # Ring finger
+            if landmarks.landmark[16].y < landmarks.landmark[14].y:
+                finger_count += 1
+
+            # Pinky finger
+            if landmarks.landmark[20].y < landmarks.landmark[18].y:
+                finger_count += 1
+
+    # Display the finger count on the frame
+    cv2.putText(frame, f"Fingers: {finger_count}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+    # Display the frame
+    cv2.imshow('Finger Count', frame)
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
